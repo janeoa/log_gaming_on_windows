@@ -12,3 +12,4 @@ dotenv = "0.15.0"
 rusqlite = { version = "0.29.0", features = ["bundled"] }
 tasklist = "0.2.12"
 crossterm = {version = "0.26.1", features = ["event-stream"]}
+ctrlc = "3.4.0"

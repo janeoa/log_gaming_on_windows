@@ -18,6 +18,8 @@ use crossterm::{
     Result as CrosstermResult,
 };
 
+use std::sync::mpsc::{self, Sender, RecvTimeoutError};
+
 
 #[derive(Debug)]
 struct LogRecord {
@@ -26,8 +28,12 @@ struct LogRecord {
     event: String,
 }
 
-#[allow(unreachable_code)]
 fn main() -> Result<(), Box<dyn std::error::Error>>{
+    let (tx, rx): (Sender<()>, _) = mpsc::channel();
+    ctrlc::set_handler(move || {
+        let _ = tx.send(());
+    }).expect("Error setting Ctrl-C handler");
+
     dotenv().ok(); // This line loads the environment variables from the ".env" file.
     let mut stdout = stdout();
 
@@ -66,7 +72,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
             MoveTo(1, 2),
             Print("Last Logged Apps: [".to_string() + &running_apps.join(", ") + "]")
         )?;
-        sleep(Duration::from_secs(120));
+        match rx.recv_timeout(Duration::from_secs(10)) {
+            Ok(_) | Err(RecvTimeoutError::Disconnected) => {
+                break;
+            },
+            Err(RecvTimeoutError::Timeout) => {},
+        }
     }
     execute!(stdout, LeaveAlternateScreen, cursor::Show)?;
 
