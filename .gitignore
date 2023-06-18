@@ -72,3 +72,5 @@ $RECYCLE.BIN/
 .env
 my_database.db
 my_database.db-journal
+my_database.db
+*.db
