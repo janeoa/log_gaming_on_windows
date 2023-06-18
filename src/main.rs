@@ -5,7 +5,6 @@ use std::path::Path;
 use std::thread::sleep;
 use std::time::Duration;
 use chrono::{Utc, DateTime};
-use termion::color;
 
 use dotenv::dotenv;
 use tasklist;
