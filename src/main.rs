@@ -45,7 +45,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
 
         // println!("{:?} ", list_all_unique_running_apps());
 
-        let conn = Connection::open("my_database.db")?;
+        let conn = Connection::open("my_database_2.db")?;
         setup_db(&conn)?;
 
         // let apps_to_check_for: Vec<String> = vec!["VALORANT.exe".to_string(), "RiotClientServices.exe".to_string()];
