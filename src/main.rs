@@ -1,6 +1,6 @@
 // use std::sync::Arc;
 use std::fs::File;
-use std::io::{BufRead, BufReader};
+use std::io::{BufRead, BufReader, stdout, Write};
 use std::path::Path;
 use std::thread::sleep;
 use std::time::Duration;
@@ -8,7 +8,16 @@ use chrono::{Utc, DateTime};
 
 use dotenv::dotenv;
 use tasklist;
-use rusqlite::{params, Connection, Result};
+use rusqlite::{params, Connection, Result as SqliteResult};
+
+use crossterm::{
+    execute,
+    terminal::{self, EnterAlternateScreen, LeaveAlternateScreen, Clear},
+    cursor::{self, MoveTo},
+    style::{self, Print},
+    Result as CrosstermResult,
+};
+
 
 #[derive(Debug)]
 struct LogRecord {
@@ -19,10 +28,16 @@ struct LogRecord {
 
 #[allow(unreachable_code)]
 fn main() -> Result<(), Box<dyn std::error::Error>>{
-    loop {
-        dotenv().ok(); // This line loads the environment variables from the ".env" file.
+    dotenv().ok(); // This line loads the environment variables from the ".env" file.
+    let mut stdout = stdout();
 
-        println!("{:?} ", list_all_unique_running_apps());
+    // Enter alternate screen and hide cursor.
+    execute!(stdout, EnterAlternateScreen, cursor::Hide)?;
+
+    loop {
+        execute!(stdout, Clear(terminal::ClearType::All))?;        
+
+        // println!("{:?} ", list_all_unique_running_apps());
 
         let conn = Connection::open("my_database.db")?;
         setup_db(&conn)?;
@@ -30,20 +45,31 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
         // let apps_to_check_for: Vec<String> = vec!["VALORANT.exe".to_string(), "RiotClientServices.exe".to_string()];
         // let running_apps: Vec<String> = check_for_specific_apps(apps_to_check_for);
         let running_apps: Vec<String> = list_all_unique_running_apps();
-        println!("The following apps from the list are running: {:?}", running_apps);
+        // println!("The following apps from the list are running: {:?}", running_apps);
 
 
         let now: DateTime<Utc> = Utc::now();
         let timestamp_str = now.format("%Y-%m-%d %H:%M:%S").to_string() ;  
-        insert_into_db(&conn, timestamp_str, running_apps.clone())?;
+        insert_into_db(&conn, timestamp_str.clone(), running_apps.clone())?;
 
         // Query the log records
-        print_from_db(&conn)?;
+        // print_from_db(&conn)?;
+        execute!(
+            stdout,
+            MoveTo(1, 1),
+            Print("Last Updated: ".to_string() + &timestamp_str)
+        )?;
 
+        // Print "Last Logged Apps" at (1, 2).
+        execute!(
+            stdout,
+            MoveTo(1, 2),
+            Print("Last Logged Apps: [".to_string() + &running_apps.join(", ") + "]")
+        )?;
         sleep(Duration::from_secs(120));
-
     }
-      
+    execute!(stdout, LeaveAlternateScreen, cursor::Show)?;
+
     Ok(())
 }
 

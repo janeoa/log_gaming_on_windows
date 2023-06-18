@@ -114,3 +114,9 @@ Taskmgr.exe
 cargo.exe
 vctip.exe
 timing.exe
+vmwp.exe
+vmmemWSL
+wslrelay.exe
+msrdc.exe
+wsl.exe
+wslhost.exe
