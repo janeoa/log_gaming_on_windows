@@ -70,3 +70,4 @@ $RECYCLE.BIN/
 
 # End of https://www.toptal.com/developers/gitignore/api/windows,visualstudiocode,rust,rust-analyzer
 .env
+my_database.db
